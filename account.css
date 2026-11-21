@@ -17,3 +17,7 @@
     padding: 8px;
 }
 .login-box button, .profile-form button { margin-top: 20px; padding: 8px 20px; }
+
+.help-guide { max-width: 760px; line-height: 1.6; }
+.help-guide section + section { margin-top: 28px; }
+.help-guide dd { margin-bottom: 12px; }

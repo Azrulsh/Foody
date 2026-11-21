@@ -31,7 +31,7 @@ async function signIn(browser, secret = password) {
     return browser.request('login.php', { email, password: secret, csrf_token: field(page.body, 'csrf_token') });
 }
 const browser = client();
-for (const path of ['main.php', 'sidebar.php', 'profile.php', 'my_restaurants.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'insert.php', 'kemas.php', 'data.php', 'delete.php']) {
+for (const path of ['main.php', 'sidebar.php', 'profile.php', 'my_restaurants.php', 'help.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'insert.php', 'kemas.php', 'data.php', 'delete.php']) {
     const response = await browser.request(path);
     check(response.status === 303 && response.headers.get('location') === 'login.php', 'Anonymous requests must redirect to login.');
 }
@@ -49,6 +49,11 @@ check((await signIn(browser)).status === 303 && browser.cookie() !== oldCookie, 
 const main = await browser.request('main.php');
 check(main.status === 200 && main.body.includes('Foody Test User'), 'Sidebar shows current account.');
 check(main.body.includes("document.location='main.php'"), 'Main Page is linked.');
+check(main.body.includes("document.location='help.php'"), 'Help Center is linked.');
+const help = await browser.request('help.php');
+check(help.status === 200 && help.body.includes('HELP CENTER'), 'Help Center loads after login.');
+check(help.body.includes('help-commission') && help.body.includes('help-errors'), 'Usage and troubleshooting guidance is available.');
+check((await browser.request('help.php', { action: 'save' })).status === 405, 'Help Center does not accept writes.');
 const another = client();
 check((await signIn(another)).status === 303, 'Second browser login.');
 let page = await browser.request('profile.php');
