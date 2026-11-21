@@ -81,10 +81,11 @@ function orderSetStatus(mysqli $database, int $id, int $revision, string $status
 }
 
 /** @return array{rows: list<array>, page: int, pages: int, count: int} */
-function orderList(mysqli $database, string $restaurant, int $page): array
+function orderList(mysqli $database, string $restaurant, int $page, int $pageSize = ORDER_PAGE_SIZE): array
 {
     if ($restaurant !== '') restaurantCode($restaurant);
     if ($page < 1) throw new InvalidArgumentException('Invalid page number.');
+    if (!in_array($pageSize, [10, 25, 50], true)) throw new InvalidArgumentException('Invalid orders per page.');
     $statement = $database->prepare("SELECT COUNT(*) AS total FROM orders WHERE (? = '' OR restaurant_code = ?)");
     try {
         $statement->bind_param('ss', $restaurant, $restaurant);
@@ -93,10 +94,10 @@ function orderList(mysqli $database, string $restaurant, int $page): array
     } finally {
         $statement->close();
     }
-    $pages = max(1, (int) ceil($count / ORDER_PAGE_SIZE));
+    $pages = max(1, (int) ceil($count / $pageSize));
     $page = min($page, $pages);
-    $offset = ($page - 1) * ORDER_PAGE_SIZE;
-    $limit = ORDER_PAGE_SIZE;
+    $offset = ($page - 1) * $pageSize;
+    $limit = $pageSize;
     $statement = $database->prepare("SELECT o.id, o.restaurant_code, r.name AS restaurant_name, o.order_date, o.customer_name, o.total_cents, o.status, o.revision FROM orders o JOIN restaurants r ON r.code = o.restaurant_code WHERE (? = '' OR o.restaurant_code = ?) ORDER BY o.order_date DESC, o.id DESC LIMIT ? OFFSET ?");
     try {
         $statement->bind_param('ssii', $restaurant, $restaurant, $limit, $offset);

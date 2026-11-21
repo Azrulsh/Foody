@@ -3,20 +3,23 @@ declare(strict_types=1);
 $serviceModule = 'report';
 $servicePeriod = 'monthly';
 require __DIR__ . '/service_controller.php';
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceForUser($currentUser);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 
 <head>
-    <link rel="stylesheet" href="css/Background.css">
+    <link rel="stylesheet" href="Background.css">
     <script src="service.js" defer></script>
     <link rel="stylesheet" href="reportm.css">
 
+    <link rel="stylesheet" href="theme.css">
 </head>
 <style>
     #backgroundmain {
-        background-color: white;
-        opacity: 0.5;
+        background-color: rgba(255, 255, 255, 0.5);
+
     }
 
 </style>

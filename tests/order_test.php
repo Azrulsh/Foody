@@ -56,6 +56,9 @@ try {
     $page = orderList($database, '', 1);
     orderCheck(count($page['rows']) === 25 && $page['pages'] === 2 && $page['count'] === 27, 'Bounded pagination.');
     orderCheck(count(orderList($database, '', 2)['rows']) === 2, 'Second page.');
+    orderCheck(count(orderList($database, '', 1, 10)['rows']) === 10, 'Ten orders per page.');
+    orderCheck(count(orderList($database, '', 1, 50)['rows']) === 27, 'Fifty orders per page.');
+    orderReject(fn () => orderList($database, '', 1, 10000));
     orderCheck(orderList($database, '', 999)['page'] === 2, 'Clamp out-of-range page.');
     orderCheck(orderList($database, 'jamilah', 1)['count'] === 2, 'Restaurant filter.');
     orderCheck(orderList($database, 'greenview', 1)['count'] === 0, 'Empty restaurant filter.');

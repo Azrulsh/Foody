@@ -3,11 +3,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/auth_functions.php';
 $currentUser = authRequireUser();
 require_once __DIR__ . '/restaurant_functions.php';
+require_once __DIR__ . '/settings_functions.php';
 $restaurantError = '';
 $restaurants = [];
 $restaurantDatabase = null;
 try {
     $restaurantDatabase = serviceDatabase();
+    $preferences = settingsLoad($restaurantDatabase, (int) $currentUser['id']);
+    $servicePage = $preferences['default_duration'] === 'monthly' ? 'servicem.php' : 'servicew.php';
     $restaurants = restaurantLoadAll($restaurantDatabase);
 } catch (Throwable $exception) {
     error_log('Foody main restaurants: ' . $exception->getMessage());
@@ -18,20 +21,23 @@ try {
         $restaurantDatabase->close();
     }
 }
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceForUser($currentUser);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 
 <head>
     <link rel="stylesheet" href="Background.css">
     <link href="Calculator with Js" rel="calculate.js">
     <link rel="stylesheet" href="reportm.css">
 
+    <link rel="stylesheet" href="theme.css">
 </head>
 <style>
     #backgroundmain {
-        background-color: white;
-        opacity: 0.5;
+        background-color: rgba(255, 255, 255, 0.5);
+
     }
 
 </style>
@@ -65,7 +71,7 @@ try {
         <img src="rest.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php?restaurant=jamilah"> <button><?= serviceEscape($restaurants['jamilah']['name']) ?></button></a>
+        <a href="<?= serviceEscape($servicePage) ?>?restaurant=jamilah"> <button><?= serviceEscape($restaurants['jamilah']['name']) ?></button></a>
         </p1>
         <br>
         <hr>
@@ -73,7 +79,7 @@ try {
         <img src="rest2.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php?restaurant=greenview"> <button><?= serviceEscape($restaurants['greenview']['name']) ?></button></a>
+        <a href="<?= serviceEscape($servicePage) ?>?restaurant=greenview"> <button><?= serviceEscape($restaurants['greenview']['name']) ?></button></a>
         <br>
         <hr>
         </p2>
@@ -81,7 +87,7 @@ try {
         <img src="rest3.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php?restaurant=lepak"> <button><?= serviceEscape($restaurants['lepak']['name']) ?></button></a>
+        <a href="<?= serviceEscape($servicePage) ?>?restaurant=lepak"> <button><?= serviceEscape($restaurants['lepak']['name']) ?></button></a>
         <br>
         </br>
         </p>

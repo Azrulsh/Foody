@@ -9,9 +9,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
     http_response_code(405);
     exit('Method not allowed.');
 }
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceForUser($currentUser);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,6 +21,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
     <link rel="stylesheet" href="Background.css">
     <link rel="stylesheet" href="reportm.css">
     <link rel="stylesheet" href="account.css">
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <table border="1" align="center">
@@ -74,15 +77,24 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
                     <h2 id="help-restaurants">My Restaurant</h2>
                     <p>Open <a href="my_restaurants.php">My Restaurant</a> to edit the name, address and phone number of one of the three existing restaurants, then click that restaurant's Save button. Address and phone number can be left blank. Each page shows up to two restaurants; use Previous and Next to move between pages. Saving keeps you on the restaurant's page.</p>
                     <p>Renaming a restaurant updates its name on Main Page and keeps its Service, Report and Commission records connected. Restaurant images remain the same. Adding and deleting restaurants are not available.</p>
-                    <p>All signed-in users share access to these restaurants and records. Settings is not yet available.</p>
+                    <p>All signed-in users share access to these restaurants and records.</p>
                 </section>
 
                 <section aria-labelledby="help-orders">
                     <h2 id="help-orders">Order List</h2>
                     <p>Open Order List in the sidebar. Select a restaurant, enter the order date, customer name and total RM, then click Add. The order number is assigned automatically, and every new order starts as Pending.</p>
-                    <p>Use the Restaurant filter to view one restaurant or all restaurants. The list shows up to 25 orders per page, ordered by order date with the newest first.</p>
+                    <p>Use the Restaurant filter to view one restaurant or all restaurants. The list shows 10, 25 or 50 orders per page according to your Settings (25 by default), ordered by order date with the newest first.</p>
                     <p>For a Pending order, choose Completed or Cancelled and click Update. Both statuses are final; orders cannot be reopened, edited or deleted in this version. Check the selected order before updating.</p>
                     <p>Orders are entered manually. Completing an order does not yet update the sample Service/Report counts or commission amounts.</p>
+                </section>
+
+                <section aria-labelledby="help-settings">
+                    <h2 id="help-settings">Settings</h2>
+                    <p>Open <a href="settings.php">Settings</a> to choose your default restaurant, Weekly/Monthly duration, orders per page, date display format, theme and content background, then click Save. These choices are saved only for your account.</p>
+                    <p>Default restaurant sets the initial Order List filter and new-order selection. You can choose another restaurant or All restaurants in the filter. Default duration determines which Service page opens when you select a restaurant from Main Page.</p>
+                    <p>Date format affects order dates displayed in the list; stored dates and date inputs are unchanged. My Restaurant always shows up to two restaurants per page. Currency stays MYR (RM).</p>
+                    <p>Choose Light or Dark. In Light mode, choose Solid or Transparent backgrounds; Transparent restores the original semi-transparent panels and faded text, buttons and inputs. Dark mode uses solid panels, so the background choice is hidden. These choices apply to all pages, including the sidebar and inputs. Login remembers the last appearance used in this browser; after signing in, your account's saved appearance takes precedence.</p>
+                    <p>Reset to Defaults restores All restaurants, Weekly, 25 orders per page, YYYY-MM-DD and Light with Transparent panels. It saves these defaults without deleting orders, restaurant details or other records.</p>
                 </section>
 
                 <section aria-labelledby="help-errors">

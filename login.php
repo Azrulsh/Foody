@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/auth_functions.php';
+require_once __DIR__ . '/appearance_functions.php';
 serviceStartSession();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($method, ['GET', 'POST'], true)) {
@@ -31,6 +32,7 @@ if ($method === 'POST') {
             $error = 'Email or password is incorrect.';
         } else {
             authEstablish($user);
+            appearanceForUser($user);
             session_write_close();
             header('Location: main.php', true, 303);
             exit;
@@ -55,9 +57,11 @@ if ($method === 'POST') {
 }
 $token = authCsrf();
 session_write_close();
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceBrowser();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -65,6 +69,7 @@ session_write_close();
     <link rel="stylesheet" href="Background.css">
     <link rel="stylesheet" href="reportm.css">
     <link rel="stylesheet" href="account.css">
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <main class="login-box">

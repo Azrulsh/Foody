@@ -58,9 +58,11 @@ if ($method === 'POST') {
     }
 }
 $revision = is_string($revision) ? $revision : '';
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceForUser($currentUser);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -68,6 +70,7 @@ $revision = is_string($revision) ? $revision : '';
     <link rel="stylesheet" href="Background.css">
     <link rel="stylesheet" href="reportm.css">
     <link rel="stylesheet" href="account.css">
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <table border="1" align="center">

@@ -34,7 +34,10 @@ try {
     $environment['FOODY_TEST_RESTAURANT_SNAPSHOT'] = json_encode($restaurantSnapshot, JSON_THROW_ON_ERROR);
     $environment['FOODY_TEST_RESTAURANT_MARKER'] = $restaurantMarker;
     $environment['FOODY_TEST_ORDER_MARKER'] = 'Order <script>' . $suffix . '</script>';
-    foreach (['auth_http_test.mjs', 'restaurant_http_test.mjs', 'order_http_test.mjs', 'service_http_test.mjs', 'commission_http_test.mjs'] as $suite) {
+    $suites = in_array('--appearance-browser', $argv, true)
+        ? ['appearance_browser_test.mjs']
+        : ['auth_http_test.mjs', 'restaurant_http_test.mjs', 'settings_http_test.mjs', 'order_http_test.mjs', 'service_http_test.mjs', 'commission_http_test.mjs'];
+    foreach ($suites as $suite) {
         // Credentials travel through the child environment, never command arguments.
         $process = proc_open(['node', __DIR__ . '/' . $suite, 'http://localhost/Foody/'], [STDIN, STDOUT, STDERR], $pipes, dirname(__DIR__), $environment);
         if (!is_resource($process) || proc_close($process) !== 0) {

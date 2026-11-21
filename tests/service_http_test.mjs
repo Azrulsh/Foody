@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { loginForTests } from './http_auth.mjs';
+import { loginForTests, updateTestCookies } from './http_auth.mjs';
 
 const base = process.argv[2] || 'http://127.0.0.1:8097/';
 let cookie = '';
@@ -12,10 +12,7 @@ async function request(path, data, method) {
         body: data ? new URLSearchParams(data) : undefined,
         redirect: 'manual',
     });
-    const sessionCookie = response.headers.get('set-cookie');
-    if (sessionCookie) {
-        cookie = sessionCookie.split(';')[0];
-    }
+    cookie = updateTestCookies(response, cookie);
     return { status: response.status, body: await response.text(), headers: response.headers };
 }
 

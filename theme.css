@@ -1,0 +1,102 @@
+:root {
+    color-scheme: light;
+    --text: #111;
+    --panel-solid: #fff;
+    --panel-transparent: rgba(255, 255, 255, 0.5);
+    --panel: var(--panel-transparent);
+    --control: #fff;
+    --control-border: #777;
+    --border: #333;
+    --link: #0645ad;
+    --heading: #ffff00;
+    --sidebar: #000;
+    --sidebar-item: #fff;
+    --sidebar-hover: #ddd;
+}
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --text: #edf0f5;
+    --panel-solid: #171d27;
+    --panel-transparent: rgba(23, 29, 39, 0.84);
+    --control: #232d3b;
+    --control-border: #8c9bb0;
+    --border: #758196;
+    --link: #a8d2ff;
+    --heading: #ffe066;
+    --sidebar: #10151e;
+    --sidebar-item: #202937;
+    --sidebar-hover: #334155;
+}
+html[data-panel="solid"] { --panel: var(--panel-solid); }
+html[data-theme="dark"] { --panel: var(--panel-solid); }
+html[data-theme] body { color: var(--text); }
+html[data-theme="dark"] body {
+    background-color: #111827;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.78)), url("Background.png");
+}
+html[data-theme] #backgroundmain,
+html[data-theme] .profile-content,
+html[data-theme] .login-box {
+    background: var(--panel);
+    color: var(--text);
+    opacity: 1;
+}
+html[data-theme] header { color: var(--heading); }
+html[data-theme] .login-box header { color: var(--text); background: transparent; }
+html[data-theme] #sidebar { background: var(--sidebar); }
+html[data-theme] #sidebarbox,
+html[data-theme] #sidebutton {
+    background: var(--sidebar-item);
+    color: var(--text);
+}
+html[data-theme] #sidebutton:hover { background: var(--sidebar-hover); }
+html[data-theme] input:not([type="hidden"]),
+html[data-theme] select,
+html[data-theme] textarea,
+html[data-theme] button {
+    background-color: var(--control);
+    color: var(--text);
+    border-color: var(--control-border);
+}
+html[data-theme] a { color: var(--link); }
+html[data-theme="light"][data-panel="transparent"] input:not([type="hidden"]),
+html[data-theme="light"][data-panel="transparent"] select,
+html[data-theme="light"][data-panel="transparent"] textarea {
+    background-color: revert;
+    color: revert;
+    border-color: revert;
+}
+/* Match the original pre-theme rendering, including its faded controls. */
+html[data-theme="light"][data-panel="transparent"] #backgroundmain,
+html[data-theme="light"][data-panel="transparent"] .profile-content,
+html[data-theme="light"][data-panel="transparent"] .login-box {
+    background: white;
+    opacity: 0.5;
+}
+html[data-theme="light"][data-panel="transparent"] #sidebutton {
+    opacity: 0.5;
+}
+html[data-theme="light"][data-panel="transparent"] #sidebarbox {
+    background: transparent;
+}
+html[data-theme] option { background-color: var(--control); color: var(--text); }
+html[data-theme="light"] button:not(#sidebutton),
+html[data-theme="light"] input[type="submit"],
+html[data-theme="light"] input[type="reset"] {
+    background-color: revert;
+    color: revert;
+    border-color: revert;
+}
+/* Keep browser autofill from painting opaque fields over transparent panels. */
+html[data-theme] input:autofill {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--text);
+    caret-color: var(--text);
+}
+html[data-theme] table[border],
+html[data-theme] table[border] > tbody > tr > td,
+html[data-theme] table[border] > thead > tr > th,
+html[data-theme] .login-box,
+html[data-theme] hr { border-color: var(--border); }
+html[data-theme] :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }

@@ -1,3 +1,4 @@
+import { updateTestCookies } from './http_auth.mjs';
 import assert from 'node:assert/strict';
 
 const base = process.argv[2] || 'http://localhost/Foody/';
@@ -15,7 +16,7 @@ function client() {
                 method: data ? 'POST' : 'GET', headers: { Cookie: cookie },
                 body: data ? new URLSearchParams(data) : undefined, redirect: 'manual',
             });
-            for (const value of response.headers.getSetCookie()) cookie = value.split(';')[0];
+            cookie = updateTestCookies(response, cookie);
             return { status: response.status, body: await response.text(), headers: response.headers };
         },
     };
@@ -31,7 +32,7 @@ async function signIn(browser, secret = password) {
     return browser.request('login.php', { email, password: secret, csrf_token: field(page.body, 'csrf_token') });
 }
 const browser = client();
-for (const path of ['main.php', 'sidebar.php', 'profile.php', 'my_restaurants.php', 'help.php', 'orders.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'insert.php', 'kemas.php', 'data.php', 'delete.php']) {
+for (const path of ['main.php', 'sidebar.php', 'profile.php', 'my_restaurants.php', 'help.php', 'orders.php', 'settings.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'insert.php', 'kemas.php', 'data.php', 'delete.php']) {
     const response = await browser.request(path);
     check(response.status === 303 && response.headers.get('location') === 'login.php', 'Anonymous requests must redirect to login.');
 }

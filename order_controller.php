@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/auth_functions.php';
 require_once __DIR__ . '/order_functions.php';
+require_once __DIR__ . '/settings_functions.php';
 if (!defined('FOODY_ORDER_PAGE')) {
     http_response_code(404);
     exit;
@@ -22,6 +23,7 @@ $restaurants = [];
 $listing = ['rows' => [], 'page' => 1, 'pages' => 1, 'count' => 0];
 $ready = false;
 $database = null;
+$preferences = null;
 $csrfVerified = false;
 $values = [
     'restaurant' => 'jamilah',
@@ -36,9 +38,13 @@ foreach ($_SESSION['order_forms'] as $token => $expiry) {
 }
 $orderRequestKey = '';
 try {
-    if (isset($_GET['restaurant']) && $_GET['restaurant'] !== '') {
-        $filter = restaurantCode($_GET['restaurant']);
-        $values['restaurant'] = $filter;
+    $database = serviceDatabase();
+    $preferences = settingsLoad($database, (int) $currentUser['id']);
+    $filter = $preferences['default_restaurant'];
+    $values['restaurant'] = $filter !== '' ? $filter : 'jamilah';
+    if (isset($_GET['restaurant'])) {
+        $filter = $_GET['restaurant'] === '' ? '' : restaurantCode($_GET['restaurant']);
+        if ($filter !== '') $values['restaurant'] = $filter;
     }
     if (isset($_GET['page'])) $page = orderPositiveInteger($_GET['page'], 'page number');
     if ($method === 'POST') {
@@ -66,7 +72,7 @@ try {
                 throw new InvalidArgumentException('Choose Completed or Cancelled for a pending order.');
             }
         }
-        $database = serviceDatabase();
+        $database ??= serviceDatabase();
         if ($action === 'create') {
             $id = orderCreate($database, $_POST, (int) $currentUser['id'], $orderRequestKey);
             unset($_SESSION['order_forms'][$orderRequestKey]);
@@ -76,7 +82,7 @@ try {
             $_SESSION['order_saved'] = 'Order status updated.';
         }
         session_write_close();
-        header('Location: orders.php' . ($filter !== '' ? '?restaurant=' . rawurlencode($filter) : ''), true, 303);
+        header('Location: orders.php?' . http_build_query(['restaurant' => $filter]), true, 303);
         exit;
     }
 } catch (InvalidArgumentException $exception) {
@@ -92,8 +98,9 @@ try {
 }
 try {
     $database ??= serviceDatabase();
+    if ($preferences === null) throw new RuntimeException('User settings could not be loaded.');
     $restaurants = restaurantLoadAll($database);
-    $listing = orderList($database, $filter, $page);
+    $listing = orderList($database, $filter, $page, $preferences['orders_per_page']);
     $ready = true;
 } catch (Throwable $exception) {
     error_log('Foody order read: ' . $exception->getMessage());
@@ -109,4 +116,4 @@ if ($orderRequestKey === '') {
     $orderRequestKey = bin2hex(random_bytes(32));
     $_SESSION['order_forms'][$orderRequestKey] = time() + 3600;
 }
-$orderActionUrl = 'orders.php' . ($filter !== '' ? '?restaurant=' . rawurlencode($filter) : '');
+$orderActionUrl = 'orders.php?' . http_build_query(['restaurant' => $filter]);

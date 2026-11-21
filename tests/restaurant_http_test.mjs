@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { loginForTests } from './http_auth.mjs';
+import { loginForTests, updateTestCookies } from './http_auth.mjs';
 
 const base = process.argv[2] || 'http://localhost/Foody/';
 let cookie = '';
@@ -9,7 +9,7 @@ async function request(path, data, method) {
         method: method || (data ? 'POST' : 'GET'), headers: { Cookie: cookie },
         body: data ? new URLSearchParams(data) : undefined, redirect: 'manual',
     });
-    for (const item of response.headers.getSetCookie()) cookie = item.split(';')[0];
+    cookie = updateTestCookies(response, cookie);
     return { status: response.status, body: await response.text(), headers: response.headers };
 }
 function check(condition, message) { assert.ok(condition, message); checks++; }

@@ -2,9 +2,11 @@
 declare(strict_types=1);
 define('FOODY_ORDER_PAGE', true);
 require __DIR__ . '/order_controller.php';
+require_once __DIR__ . '/appearance_functions.php';
+$appearance = appearanceForUser($currentUser);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" <?= appearanceAttributes($appearance) ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +15,7 @@ require __DIR__ . '/order_controller.php';
     <link rel="stylesheet" href="reportm.css">
     <link rel="stylesheet" href="account.css">
     <script src="order.js" defer></script>
+    <link rel="stylesheet" href="theme.css">
 </head>
 <body>
     <table border="1" align="center">
@@ -64,7 +67,7 @@ require __DIR__ . '/order_controller.php';
                     <?php foreach ($listing['rows'] as $order): ?>
                     <tr>
                         <td><?= serviceEscape(orderNumber((int) $order['id'])) ?></td>
-                        <td><?= serviceEscape($order['order_date']) ?></td>
+                        <td><?= serviceEscape(settingsFormatDate($order['order_date'], $preferences['date_format'])) ?></td>
                         <td><?= serviceEscape($order['restaurant_name']) ?></td>
                         <td><?= serviceEscape($order['customer_name']) ?></td>
                         <td><?= serviceEscape(serviceFormatMoney((int) $order['total_cents'])) ?></td>
