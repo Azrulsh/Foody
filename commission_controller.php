@@ -10,6 +10,8 @@ if (!defined('FOODY_COMMISSION_PAGE')) {
 }
 
 serviceStartSession();
+require_once __DIR__ . '/auth_functions.php';
+$currentUser = authRequireUser();
 $commissionMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $commissionExpectedMethod = isset($commissionAction) ? 'POST' : 'GET';
 if ($commissionMethod !== $commissionExpectedMethod) {

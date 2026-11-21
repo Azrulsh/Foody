@@ -8,3 +8,7 @@ header{
 .button1 {
     align-content: center;
 }
+
+.user-name {
+    text-transform: uppercase;
+}

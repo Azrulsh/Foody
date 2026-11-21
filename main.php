@@ -1,3 +1,8 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/auth_functions.php';
+$currentUser = authRequireUser();
+?>
 <!DOCTYPE html>
 <html>
 
@@ -22,7 +27,7 @@
                 <?php include 'sidebar.php' ?>
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">
-            <header> WELCOME, ACCOUNTANT</header>
+            <header> WELCOME, <span class="user-name"><?= serviceEscape($currentUser['name']) ?></span></header>
                 </td>
         </tr>
         <tr>

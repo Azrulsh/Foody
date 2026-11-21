@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { loginForTests } from './http_auth.mjs';
 
 const base = process.argv[2] || 'http://localhost/Foody/';
 let cookie = '';
@@ -16,6 +17,7 @@ async function request(path, data) {
 }
 function check(condition, message) { assert.ok(condition, message); checks++; }
 
+await loginForTests(request);
 for (const module of ['service', 'report']) {
     for (const period of ['weekly', 'monthly']) {
         const selection = `restaurant=lepak&module=${module}&period=${period}`;

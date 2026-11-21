@@ -12,6 +12,8 @@ if (!isset($servicePeriod) || !isset(SERVICE_SLOT_COUNTS[$servicePeriod]) || !in
 }
 
 serviceStartSession();
+require_once __DIR__ . '/auth_functions.php';
+$currentUser = authRequireUser();
 
 $serviceMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if (!in_array($serviceMethod, ['GET', 'POST'], true)) {

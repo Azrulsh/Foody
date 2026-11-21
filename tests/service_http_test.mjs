@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { loginForTests } from './http_auth.mjs';
 
 const base = process.argv[2] || 'http://127.0.0.1:8097/';
 let cookie = '';
@@ -23,6 +24,7 @@ function check(condition, message) {
     checks++;
 }
 
+await loginForTests(request);
 for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4], ['reportw.php', 7], ['reportm.php', 4]]) {
     const loaded = await request(`${page}?restaurant=greenview`);
     check(loaded.status === 200, `${page} loads`);
@@ -33,7 +35,8 @@ for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4], ['reportw
         check(loaded.body.includes('restaurant=greenview'), 'Report navigation preserves the restaurant');
         check(loaded.body.includes('src="service.js"'), 'Reports share the tested money input behavior');
     }
-    const token = loaded.body.match(/name="csrf_token" value="([a-f0-9]+)"/)[1];
+    const serviceForm = loaded.body.slice(loaded.body.indexOf('id="service-form"'));
+    const token = serviceForm.match(/name="csrf_token" value="([a-f0-9]+)"/)[1];
     check((await request(`${page}?restaurant=greenview`, { csrf_token: 'wrong' })).status === 403, 'Reject invalid CSRF');
     const payload = { csrf_token: token };
     for (let index = 0; index < slots; index++) {

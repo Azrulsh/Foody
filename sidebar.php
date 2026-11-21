@@ -1,5 +1,8 @@
-<!DOCTYPE html>
-<html>
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/auth_functions.php';
+$currentUser = authRequireUser();
+?>
     <style>
         #sidebar{
             background-color: black;
@@ -25,11 +28,6 @@
     
         
     </style>
-    <head>
-    <link rel="stylesheet" href="Background.css">
-
-    </head>
-    <body>
         <table id="sidebar">
             <tr>
                 <td>
@@ -39,18 +37,18 @@
             <tr>
                 <td style="color:white ;text-align:center" > 
                 <br>
-                WAN KHAL
+                <span class="user-name"><?= serviceEscape($currentUser['name']) ?></span>
                 <br>
                 <br>
                 </td>
             <tr>
                 <td id="sidebarbox">
-                <button id="sidebutton" onclick="document.location=''">My profile</button>
+                <button type="button" id="sidebutton" onclick="document.location='profile.php'">My profile</button>
                 </td> 
             </tr>
             <tr> 
                 <td id="sidebarbox">
-                <button id="sidebutton" onclick="document.location=''">Main Page</button>
+                <button type="button" id="sidebutton" onclick="document.location='main.php'">Main Page</button>
                 </td>
             </tr>
             <tr>
@@ -75,14 +73,15 @@
             </tr>
             <tr>
                 <td id="sidebarbox">
-                <button id="sidebutton" onclick="document.location=''">Log Out</button>
+                <form action="logout.php" method="post" style="margin:0">
+                    <input type="hidden" name="csrf_token" value="<?= serviceEscape(authCsrf()) ?>">
+                    <button type="submit" id="sidebutton">Log Out</button>
+                </form>
                 </td>
             </tr>
             <tr>
                 <td style="color:white ;text-align:center">
-                    ver.1.0
+                    ver.2.0
                 </td>
             </tr>
         </table>
-    </body>
-</html>

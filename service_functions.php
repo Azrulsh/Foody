@@ -8,13 +8,19 @@ const SERVICE_MAX_CENTS = 999999999;
 
 function serviceStartSession(): void
 {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
+    }
     ini_set('display_errors', '0');
     ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.use_trans_sid', '0');
+    session_name('FOODYSESSID');
     session_set_cookie_params([
         'httponly' => true,
         'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'samesite' => 'Lax',
-        'path' => '/',
+        'path' => rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/') . '/',
     ]);
     if (!session_start()) {
         error_log('Foody: session storage is unavailable.');
@@ -24,6 +30,7 @@ function serviceStartSession(): void
     header('Cache-Control: no-store');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: same-origin');
+    header('X-Frame-Options: DENY');
 }
 
 function serviceEscape(string $value): string

@@ -27,7 +27,7 @@ require __DIR__ . '/commission_controller.php';
                 <?php include 'sidebar.php' ?>
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">
-            <header> WELCOME, ACCOUNTANT</header>
+            <header> WELCOME, <span class="user-name"><?= serviceEscape($currentUser['name']) ?></span></header>
                 </td>
         </tr>
         <tr>

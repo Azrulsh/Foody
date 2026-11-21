@@ -104,3 +104,20 @@ CREATE TABLE IF NOT EXISTS commission_records (
     CONSTRAINT chk_commission_money CHECK (gross_cents <= 999999999 AND penalty_cents <= 999999999 AND delivery_cents <= 999999999),
     CONSTRAINT chk_commission_revision CHECK (revision >= 1)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS auth_users (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(254) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+    password_hash VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    auth_version BIGINT UNSIGNED NOT NULL DEFAULT 1,
+    profile_revision BIGINT UNSIGNED NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS auth_login_limits (
+    bucket CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+    attempts INT UNSIGNED NOT NULL,
+    expires_at BIGINT UNSIGNED NOT NULL,
+    INDEX idx_auth_limit_expiry (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
