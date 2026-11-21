@@ -1,16 +1,8 @@
-<!-- delete.php -->
-<!-- To delete one particular data. -->
-
 <?php
 
-include ("data.php");
+declare(strict_types=1);
 
-$IDURL = $_GET['ID'];
-
-$query = "DELETE FROM commission WHERE ID = '$IDURL'";
-$result = mysqli_query($conn,$query) or die ("Could not execute query in kemas.php");
-
-if($result){
-echo "<script type= 'text/javascript'> window.location='restaurant.php'</script>";
-}
-?>
+// Delete in the existing UI resets the form; this legacy write endpoint is retired.
+header('Allow: GET');
+http_response_code(410);
+exit('This endpoint is no longer available.');

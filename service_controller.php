@@ -76,7 +76,11 @@ try {
             'module' => $serviceModule,
         ];
         session_write_close();
-        header('Location: restaurant.php', true, 303);
+        header('Location: restaurant.php?' . http_build_query([
+            'restaurant' => $serviceRestaurant,
+            'module' => $serviceModule,
+            'period' => $servicePeriod,
+        ], '', '&', PHP_QUERY_RFC3986), true, 303);
         exit;
     }
     $serviceDatabaseReady = true;
