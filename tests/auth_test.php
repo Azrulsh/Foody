@@ -18,7 +18,7 @@ function authReject(callable $operation, string $type): void {
 authTest(authEmail('Person@Example.com') === 'person@example.com', 'Normalize email.');
 authTest(authName('  Test User  ') === 'Test User', 'Trim name.');
 foreach ([[], 'bad', 'a@b', str_repeat('a', 255)] as $invalid) authReject(fn () => authEmail($invalid), InvalidArgumentException::class);
-foreach (['', [], "test\nname", str_repeat('a', 101)] as $invalid) authReject(fn () => authName($invalid), InvalidArgumentException::class);
+foreach (['', [], "test\nname", "\0Test User", "Test User\t", "\nTest User\r", str_repeat('a', 101)] as $invalid) authReject(fn () => authName($invalid), InvalidArgumentException::class);
 foreach (['short', [], str_repeat('a', 73), "123456789012\0"] as $invalid) authReject(fn () => authPassword($invalid), InvalidArgumentException::class);
 authTest(authPassword('a valid passphrase 123') === 'a valid passphrase 123', 'Accept passphrase.');
 $database = serviceDatabase();
@@ -47,6 +47,7 @@ try {
     $profile['email'] = 'new@example.invalid';
     authReject(fn () => authUpdateProfile($database, $user, $profile, 2), InvalidArgumentException::class);
     $profile['current_password'] = $password;
+    authReject(fn () => authUpdateProfile($database, $user, array_replace($profile, ['current_password' => $password . "\0extra"]), 2), InvalidArgumentException::class);
     $profile['new_password'] = 'new test passphrase 123';
     $profile['password_confirmation'] = 'different';
     authReject(fn () => authUpdateProfile($database, $user, $profile, 2), InvalidArgumentException::class);

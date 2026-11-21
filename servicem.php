@@ -60,6 +60,7 @@ $appearance = appearanceForUser($currentUser);
         <?php endif; ?>
         <form id="service-form" data-service-form method="post" action="servicem.php<?= serviceEscape($serviceQuery) ?>">
         <input type="hidden" name="csrf_token" value="<?= serviceEscape($_SESSION['service_csrf']) ?>">
+        <input type="hidden" name="amounts_version" value="<?= serviceEscape($serviceVersion) ?>" form="service-form">
         <p>5732 Services Completed
         <br>
         <table border="1" align="center">

@@ -48,7 +48,7 @@ function authEmail(mixed $value): string
 
 function authName(mixed $value): string
 {
-    if (!is_string($value) || !preg_match('/\A[^\p{C}]{1,100}\z/u', trim($value))) {
+    if (!is_string($value) || !preg_match('/\A[^\p{C}]{1,100}\z/u', trim($value)) || preg_match('/\p{C}/u', $value)) {
         throw new InvalidArgumentException('Enter a name between 1 and 100 characters.');
     }
     return trim($value);
@@ -242,7 +242,7 @@ function authUpdateProfile(mysqli $database, array $user, array $input, int $rev
     if ($stored === null) throw new DomainException('Your account is no longer available.');
     if ($sensitive) {
         $current = $input['current_password'] ?? null;
-        if (!is_string($current) || strlen($current) > 72 || !password_verify($current, $stored['password_hash'])) {
+        if (!is_string($current) || strlen($current) > 72 || str_contains($current, "\0") || !password_verify($current, $stored['password_hash'])) {
             throw new InvalidArgumentException('Enter your current password to change your email or password.');
         }
     }

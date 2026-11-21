@@ -61,6 +61,7 @@ $appearance = appearanceForUser($currentUser);
         <?php endif; ?>
         <form id="service-form" data-service-form method="post" action="reportw.php<?= serviceEscape($serviceQuery) ?>">
         <input type="hidden" name="csrf_token" value="<?= serviceEscape($_SESSION['service_csrf']) ?>" form="service-form">
+        <input type="hidden" name="amounts_version" value="<?= serviceEscape($serviceVersion) ?>" form="service-form">
         <p>732 Total Reports
         <br>
         <table border="1" align="center">

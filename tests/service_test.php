@@ -70,6 +70,51 @@ if (in_array('--database', $argv, true)) {
             check(serviceLoadAmounts($database, 'jamilah', 'weekly') === array_fill(0, 7, SERVICE_MAX_CENTS), 'Failed saves roll back every changed slot.');
         }
         check((int) $database->query('SELECT COUNT(*) FROM service_amounts')->fetch_row()[0] === 11, 'Repeated saves do not duplicate rows.');
+        foreach (['weekly' => 7, 'monthly' => 4] as $period => $slots) {
+            $before = serviceLoadAmounts($database, 'greenview', $period);
+            $version = serviceAmountsVersion($before, 'greenview', $period);
+            $saved = array_fill(0, $slots, 123);
+            serviceSaveAmounts($database, 'greenview', $period, $saved, 'service', $version);
+            check(serviceLoadAmounts($database, 'greenview', $period) === $saved, 'A current version can perform the first save.');
+            try {
+                serviceSaveAmounts($database, 'greenview', $period, array_fill(0, $slots, 999), 'service', $version);
+                check(false, 'A stale browser must not overwrite a newer save.');
+            } catch (DomainException) {
+                check(serviceLoadAmounts($database, 'greenview', $period) === $saved, 'Stale saves preserve all newer amounts.');
+            }
+            $current = serviceAmountsVersion($saved, 'greenview', $period);
+            serviceSaveAmounts($database, 'greenview', $period, $before, 'service', $current);
+            check(serviceLoadAmounts($database, 'greenview', $period) === $before, 'Reloading allows another save after a rejected stale write.');
+        }
+        // A second connection exercises the mutex independently of PHP sessions.
+        $otherDatabase = serviceDatabase();
+        $schema = $database->query('SELECT DATABASE()')->fetch_row()[0];
+        $lockName = hash('sha256', json_encode([$schema, 'service_amounts', 'greenview', 'weekly'], JSON_THROW_ON_ERROR));
+        try {
+            $lock = $otherDatabase->prepare('SELECT GET_LOCK(?, 0)');
+            $lock->bind_param('s', $lockName);
+            $lock->execute();
+            check((int) $lock->get_result()->fetch_row()[0] === 1, 'Rejected and successful saves release their locks for other connections.');
+            $lock->close();
+            $before = serviceLoadAmounts($database, 'greenview', 'weekly');
+            $version = serviceAmountsVersion($before, 'greenview', 'weekly');
+            $blocked = false;
+            try {
+                serviceSaveAmounts($database, 'greenview', 'weekly', array_fill(0, 7, 999), 'service', $version);
+            } catch (RuntimeException $exception) {
+                $blocked = str_contains($exception->getMessage(), 'data is busy');
+            }
+            check($blocked && serviceLoadAmounts($database, 'greenview', 'weekly') === $before, 'A competing save times out safely without changing amounts.');
+            $owner = $otherDatabase->prepare('SELECT IS_USED_LOCK(?) = CONNECTION_ID()');
+            $owner->bind_param('s', $lockName);
+            $owner->execute();
+            check((int) $owner->get_result()->fetch_row()[0] === 1, 'A failed writer cannot release another connection\'s lock.');
+            $owner->close();
+        } finally {
+            $otherDatabase->close();
+        }
+        serviceSaveAmounts($database, 'greenview', 'weekly', $before, 'service', $version);
+        check(serviceLoadAmounts($database, 'greenview', 'weekly') === $before, 'Saving recovers when the competing connection releases its lock.');
     } finally {
         $database->query('DROP TEMPORARY TABLE service_amounts');
         $database->close();

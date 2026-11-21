@@ -38,6 +38,7 @@ $serviceTotal = '0.00';
 $serviceDatabaseReady = false;
 $serviceDatabase = null;
 $serviceAmounts = null;
+$serviceVersion = '';
 
 if ($serviceMethod === 'POST') {
     $submittedToken = $_POST['csrf_token'] ?? null;
@@ -46,6 +47,11 @@ if ($serviceMethod === 'POST') {
         $serviceError = 'Your form has expired. Reload this page and try again.';
     } else {
         try {
+            $serviceVersion = $_POST['amounts_version'] ?? null;
+            if (!is_string($serviceVersion) || !preg_match('/\A[a-f0-9]{64}\z/D', $serviceVersion)) {
+                $serviceVersion = '';
+                throw new InvalidArgumentException('Invalid amount version. Reload this page before calculating.');
+            }
             $serviceAmounts = serviceValidateAmounts($_POST['amounts'] ?? null, count($serviceValues));
             $serviceValues = array_map('serviceFormatInput', $serviceAmounts);
             $serviceTotal = serviceFormatMoney(array_sum($serviceAmounts));
@@ -67,10 +73,11 @@ try {
     $serviceDatabase = serviceDatabase();
     if ($serviceMethod === 'GET') {
         $serviceAmounts = serviceLoadAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceModule);
+        $serviceVersion = serviceAmountsVersion($serviceAmounts, $serviceRestaurant, $servicePeriod, $serviceModule);
         $serviceValues = array_map('serviceFormatInput', $serviceAmounts);
         $serviceTotal = serviceFormatMoney(array_sum($serviceAmounts));
     } elseif ($serviceError === '' && $serviceAmounts !== null) {
-        serviceSaveAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceAmounts, $serviceModule);
+        serviceSaveAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceAmounts, $serviceModule, $serviceVersion);
         $_SESSION['service_calculation'] = [
             'restaurant' => $serviceRestaurant,
             'period' => $servicePeriod,
@@ -85,6 +92,10 @@ try {
         ], '', '&', PHP_QUERY_RFC3986), true, 303);
         exit;
     }
+    $serviceDatabaseReady = true;
+} catch (DomainException $exception) {
+    http_response_code(409);
+    $serviceError = $exception->getMessage();
     $serviceDatabaseReady = true;
 } catch (Throwable $exception) {
     error_log('Foody ' . $serviceModule . ' module: ' . $exception->getMessage());

@@ -63,9 +63,33 @@ try {
     await navigate('login.php');
     await submit(`document.getElementById('email').value=${JSON.stringify(process.env.FOODY_TEST_EMAIL)}; document.getElementById('password').value=${JSON.stringify(process.env.FOODY_TEST_PASSWORD)}; document.querySelector('form').requestSubmit();`);
     check(await evaluate("location.pathname.endsWith('/main.php')"), 'Browser login succeeds.');
+    for (const page of ['servicew.php', 'servicem.php', 'reportw.php', 'reportm.php']) {
+        await navigate(page);
+        const totals = await evaluate(`(() => {
+            const form = document.getElementById('service-form');
+            const inputs = Array.from(form.elements).filter(input => input.hasAttribute('data-service-amount'));
+            const total = Array.from(form.elements).find(input => input.hasAttribute('data-service-total'));
+            inputs.forEach(input => input.value = '0');
+            inputs[0].value = '1.20';
+            inputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+            return { total: total.value, count: inputs.length, associated: inputs.every(input => input.form === form), inside: inputs.every(input => form.contains(input)) };
+        })()`);
+        check(totals.associated && totals.count === (page.endsWith('w.php') ? 7 : 4), 'Browser associates every amount with its form.');
+        check(totals.total === '1.20', 'Typing a decimal updates the browser total.');
+    }
     for (const theme of ['light', 'dark']) {
         for (const panel of ['solid', 'transparent']) {
             await navigate('settings.php');
+            check(await evaluate(`(() => {
+                const theme = document.getElementById('theme');
+                const group = document.getElementById('panel-background-group');
+                theme.value = 'dark';
+                theme.dispatchEvent(new Event('change', { bubbles: true }));
+                const hidden = group.hidden;
+                theme.value = 'light';
+                theme.dispatchEvent(new Event('change', { bubbles: true }));
+                return hidden && !group.hidden;
+            })()`), 'Content background choice hides in Dark and returns in Light.');
             await submit(`document.getElementById('theme').value=${JSON.stringify(theme)}; document.getElementById('panel-background').value=${JSON.stringify(panel)}; document.getElementById('settings-form').requestSubmit(document.querySelector('button[value="save"]'));`);
             for (const page of ['main.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'profile.php', 'my_restaurants.php', 'orders.php', 'help.php', 'settings.php']) {
                 await navigate(page);
@@ -73,12 +97,16 @@ try {
                     const panel = document.querySelector('#backgroundmain, .profile-content, .login-box');
                     const computed = getComputedStyle(panel);
                     const sidebar = getComputedStyle(document.getElementById('sidebutton'));
-                    return { theme: document.documentElement.dataset.theme, panel: document.documentElement.dataset.panel, opacity: computed.opacity, background: computed.backgroundColor, text: computed.color, sidebar: sidebar.backgroundColor };
+                    return { theme: document.documentElement.dataset.theme, panel: document.documentElement.dataset.panel, opacity: computed.opacity, background: computed.backgroundColor, text: computed.color, sidebar: sidebar.backgroundColor, sidebarOpacity: getComputedStyle(document.getElementById('sidebar')).opacity, buttonOpacities: Array.from(document.querySelectorAll('[id="sidebutton"]'), button => getComputedStyle(button).opacity) };
                 })()`);
                 check(style.theme === theme && style.panel === panel, 'Saved appearance in browser.');
                 check(style.opacity === (theme === 'light' && panel === 'transparent' ? '0.5' : '1'), 'Original Light transparency and solid Dark panels.');
                 check(style.background.startsWith('rgb('), 'Solid surface with transparency applied by the selected panel mode.');
                 check(style.text === (theme === 'dark' ? 'rgb(237, 240, 245)' : 'rgb(17, 17, 17)'), 'Readable foreground follows theme.');
+                check(style.sidebarOpacity === '1' && style.buttonOpacities.length === 7 && style.buttonOpacities.every(opacity => opacity === (theme === 'light' && panel === 'transparent' ? '0.5' : '1')), 'Only sidebar buttons fade in Light Transparent mode.');
+                if (page === 'settings.php') {
+                    check(await evaluate(`document.getElementById('panel-background-group').hidden === ${theme === 'dark'}`), 'Saved Dark mode hides Content background on load.');
+                }
                 if (page === 'main.php' || (page === 'settings.php' && theme === 'dark' && panel === 'solid')) {
                     const screenshot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
                     await writeFile(join(screenshots, `${page.replace('.php', '')}-${theme}-${panel}.png`), Buffer.from(screenshot.data, 'base64'));

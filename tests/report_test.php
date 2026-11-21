@@ -53,6 +53,19 @@ if (in_array('--database', $argv, true)) {
         } catch (mysqli_sql_exception) {
             reportCheck(serviceLoadAmounts($database, 'lepak', 'weekly', 'report') === $week, 'Failed report save rolls back all values.');
         }
+        foreach (['weekly' => 7, 'monthly' => 4] as $period => $slots) {
+            $before = serviceLoadAmounts($database, 'lepak', $period, 'report');
+            $version = serviceAmountsVersion($before, 'lepak', $period, 'report');
+            $saved = array_fill(0, $slots, 321);
+            serviceSaveAmounts($database, 'lepak', $period, $saved, 'report', $version);
+            try {
+                serviceSaveAmounts($database, 'lepak', $period, $before, 'report', $version);
+                reportCheck(false, 'A stale report must fail.');
+            } catch (DomainException) {
+                reportCheck(serviceLoadAmounts($database, 'lepak', $period, 'report') === $saved, 'A stale report cannot overwrite newer amounts.');
+            }
+            reportCheck(serviceAmountsVersion($saved, 'lepak', $period, 'service') !== serviceAmountsVersion($saved, 'lepak', $period, 'report'), 'Versions are bound to their module.');
+        }
     } finally {
         // Closing the connection also removes temporary tables on every failure path.
         $database->close();

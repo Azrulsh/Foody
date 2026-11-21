@@ -41,6 +41,7 @@ $currentUser = authRequireUser();
                 <br>
                 <br>
                 </td>
+            </tr>
             <tr>
                 <td id="sidebarbox">
                 <button type="button" id="sidebutton" onclick="document.location='profile.php'">My profile</button>

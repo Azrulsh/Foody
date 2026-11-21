@@ -34,8 +34,9 @@ for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4], ['reportw
     }
     const serviceForm = loaded.body.slice(loaded.body.indexOf('id="service-form"'));
     const token = serviceForm.match(/name="csrf_token" value="([a-f0-9]+)"/)[1];
+    const version = serviceForm.match(/name="amounts_version" value="([a-f0-9]{64})"/)[1];
     check((await request(`${page}?restaurant=greenview`, { csrf_token: 'wrong' })).status === 403, 'Reject invalid CSRF');
-    const payload = { csrf_token: token };
+    const payload = { csrf_token: token, amounts_version: version };
     for (let index = 0; index < slots; index++) {
         payload[`amounts[${index}]`] = '0.00';
     }
@@ -46,8 +47,14 @@ for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4], ['reportw
     payload['amounts[0]'] = '<script>alert(1)</script>';
     const rejected = await request(`${page}?restaurant=greenview`, payload);
     check(rejected.status === 422 && !rejected.body.includes('<script>alert(1)</script>') && rejected.body.includes('&lt;script&gt;'), 'Escape rejected input');
-    check((await request(`${page}?restaurant=greenview`, { csrf_token: token, amounts: 'invalid' })).status === 422, 'Handle scalar payload safely');
-    check((await request(`${page}?restaurant=greenview`, { csrf_token: token, 'amounts[0][nested]': '1' })).status === 422, 'Handle nested payload safely');
+    check((await request(`${page}?restaurant=greenview`, { ...payload, amounts: 'invalid' })).status === 422, 'Handle scalar payload safely');
+    check((await request(`${page}?restaurant=greenview`, { csrf_token: token, amounts_version: version, 'amounts[0][nested]': '1' })).status === 422, 'Handle nested payload safely');
+    payload['amounts[0]'] = '0';
+    check((await request(`${page}?restaurant=greenview`, { ...payload, amounts_version: '' })).status === 422, 'Require an amount version');
+    check((await request(`${page}?restaurant=greenview`, { ...payload, amounts_version: undefined, 'amounts_version[nested]': version })).status === 422, 'Reject a nested version safely');
+    const stale = await request(`${page}?restaurant=greenview`, { ...payload, amounts_version: 'f'.repeat(64) });
+    check(stale.status === 409 && stale.body.includes('amounts have changed'), 'Reject a stale version without writing');
+    check(stale.body.includes(`name="amounts_version" value="${'f'.repeat(64)}"`), 'A stale retry cannot acquire a fresh version silently');
 }
 
 check((await request('servicew.php?restaurant[]=bad')).status === 400, 'Reject array restaurant');

@@ -1,0 +1,8 @@
+# XAMPP serves the repository directory directly. Keep development files private.
+Options -Indexes
+DirectoryIndex main.php
+
+RewriteEngine On
+RewriteRule (^|/)\. - [R=404,L]
+RewriteRule ^(?:tests|scripts)(?:/|$) - [R=404,L,NC]
+RewriteRule \.(?:sql(?:\.gz)?|bak|backup|old|orig|rej|log|ini|ps1)(?:/|$) - [R=404,L,NC]

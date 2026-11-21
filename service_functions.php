@@ -113,26 +113,63 @@ function serviceLoadAmounts(mysqli $database, string $restaurant, string $period
     return $amounts;
 }
 
+/** A content version avoids changing the existing amount-table schemas. */
+function serviceAmountsVersion(array $amounts, string $restaurant, string $period, string $module = 'service'): string
+{
+    return hash('sha256', json_encode([$restaurant, $period, $module, $amounts], JSON_THROW_ON_ERROR));
+}
+
 /** @param list<int> $amounts */
-function serviceSaveAmounts(mysqli $database, string $restaurant, string $period, array $amounts, string $module = 'service'): void
+function serviceSaveAmounts(mysqli $database, string $restaurant, string $period, array $amounts, string $module = 'service', ?string $expectedVersion = null): void
 {
     $table = serviceAmountTable($module);
-    $database->begin_transaction();
+    // Serialize the compare-and-save, including the first save when no rows exist.
+    // Session locks alone cannot protect writes from different accounts/browsers.
+    $schema = $database->query('SELECT DATABASE()')->fetch_row()[0];
+    $lockName = hash('sha256', json_encode([$schema, $table, $restaurant, $period], JSON_THROW_ON_ERROR));
+    $lock = $database->prepare('SELECT GET_LOCK(?, 5)');
     try {
-        $statement = $database->prepare("INSERT INTO {$table} (restaurant, period, slot_number, amount_cents) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount_cents = VALUES(amount_cents)");
+        $lock->bind_param('s', $lockName);
+        $lock->execute();
+        $acquired = (int) $lock->get_result()->fetch_row()[0] === 1;
+    } finally {
+        $lock->close();
+    }
+    if (!$acquired) {
+        throw new RuntimeException('Amount data is busy. Try again later.');
+    }
+    try {
+        $database->begin_transaction();
         try {
-            $statement->bind_param('ssii', $restaurant, $period, $slot, $cents);
-            foreach ($amounts as $index => $cents) {
-                $slot = $index + 1;
-                $statement->execute();
+            if ($expectedVersion !== null) {
+                $current = serviceLoadAmounts($database, $restaurant, $period, $module);
+                if (!hash_equals(serviceAmountsVersion($current, $restaurant, $period, $module), $expectedVersion)) {
+                    throw new DomainException('These amounts have changed. Reload the page before calculating again.');
+                }
             }
-        } finally {
-            $statement->close();
+            $statement = $database->prepare("INSERT INTO {$table} (restaurant, period, slot_number, amount_cents) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount_cents = VALUES(amount_cents)");
+            try {
+                $statement->bind_param('ssii', $restaurant, $period, $slot, $cents);
+                foreach ($amounts as $index => $cents) {
+                    $slot = $index + 1;
+                    $statement->execute();
+                }
+            } finally {
+                $statement->close();
+            }
+            $database->commit();
+        } catch (Throwable $exception) {
+            $database->rollback();
+            throw $exception;
         }
-        $database->commit();
-    } catch (Throwable $exception) {
-        $database->rollback();
-        throw $exception;
+    } finally {
+        $release = $database->prepare('SELECT RELEASE_LOCK(?)');
+        try {
+            $release->bind_param('s', $lockName);
+            $release->execute();
+        } finally {
+            $release->close();
+        }
     }
 }
 

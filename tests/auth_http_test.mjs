@@ -32,6 +32,10 @@ async function signIn(browser, secret = password) {
     return browser.request('login.php', { email, password: secret, csrf_token: field(page.body, 'csrf_token') });
 }
 const browser = client();
+for (const path of ['.git/config', '.git/HEAD', 'foody.sql', 'auth.sql', 'appearance.sql', 'scripts/create-account.ps1', 'tests/service_js_test.mjs']) {
+    check((await browser.request(path)).status === 404, 'Repository metadata, SQL and development files are private.');
+}
+check((await browser.request('./')).status === 303, 'The application root opens the protected main page.');
 for (const path of ['main.php', 'sidebar.php', 'profile.php', 'my_restaurants.php', 'help.php', 'orders.php', 'settings.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'insert.php', 'kemas.php', 'data.php', 'delete.php']) {
     const response = await browser.request(path);
     check(response.status === 303 && response.headers.get('location') === 'login.php', 'Anonymous requests must redirect to login.');
