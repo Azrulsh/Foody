@@ -58,7 +58,7 @@ $currentUser = authRequireUser();
             </tr>
             <tr>
                 <td id="sidebarbox">
-                <button id="sidebutton" onclick="document.location=''">Order List</button>
+                <button type="button" id="sidebutton" onclick="document.location='orders.php'">Order List</button>
                 </td>
             </tr>
             <tr>

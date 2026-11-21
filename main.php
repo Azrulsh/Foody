@@ -43,7 +43,7 @@ try {
                 <?php include 'sidebar.php' ?>
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">
-            <header> WELCOME, <span class="user-name"><?= serviceEscape($currentUser['name']) ?></span></header>
+            <header>MAIN PAGE</header>
                 </td>
         </tr>
         <tr>

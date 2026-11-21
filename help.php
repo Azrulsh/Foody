@@ -72,9 +72,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
 
                 <section aria-labelledby="help-restaurants">
                     <h2 id="help-restaurants">My Restaurant</h2>
-                    <p>Open <a href="my_restaurants.php">My Restaurant</a> to edit the name, address and phone number of one of the three existing restaurants, then click that restaurant's Save button. Address and phone number can be left blank.</p>
+                    <p>Open <a href="my_restaurants.php">My Restaurant</a> to edit the name, address and phone number of one of the three existing restaurants, then click that restaurant's Save button. Address and phone number can be left blank. Each page shows up to two restaurants; use Previous and Next to move between pages. Saving keeps you on the restaurant's page.</p>
                     <p>Renaming a restaurant updates its name on Main Page and keeps its Service, Report and Commission records connected. Restaurant images remain the same. Adding and deleting restaurants are not available.</p>
-                    <p>All signed-in users share access to these restaurants and records. Order List and Settings are not yet available.</p>
+                    <p>All signed-in users share access to these restaurants and records. Settings is not yet available.</p>
+                </section>
+
+                <section aria-labelledby="help-orders">
+                    <h2 id="help-orders">Order List</h2>
+                    <p>Open Order List in the sidebar. Select a restaurant, enter the order date, customer name and total RM, then click Add. The order number is assigned automatically, and every new order starts as Pending.</p>
+                    <p>Use the Restaurant filter to view one restaurant or all restaurants. The list shows up to 25 orders per page, ordered by order date with the newest first.</p>
+                    <p>For a Pending order, choose Completed or Cancelled and click Update. Both statuses are final; orders cannot be reopened, edited or deleted in this version. Check the selected order before updating.</p>
+                    <p>Orders are entered manually. Completing an order does not yet update the sample Service/Report counts or commission amounts.</p>
                 </section>
 
                 <section aria-labelledby="help-errors">

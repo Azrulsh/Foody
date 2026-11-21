@@ -10,6 +10,9 @@
 .login-box header { color: black; padding: 12px; }
 .profile-content { background: white; opacity: 0.5; padding: 24px; vertical-align: top; }
 .profile-form { max-width: 440px; }
+.restaurant-content { padding-top: 12px; }
+.restaurant-content .profile-form:first-of-type h2 { margin-top: 0; }
+.restaurant-content .profile-form:not(:first-of-type) h2 { margin-top: 8px; }
 .login-box label, .profile-form label { display: block; margin: 16px 0 6px; text-align: left; }
 .login-box input:not([type=hidden]), .profile-form input:not([type=hidden]) {
     box-sizing: border-box;
@@ -21,3 +24,6 @@
 .help-guide { max-width: 760px; line-height: 1.6; }
 .help-guide section + section { margin-top: 28px; }
 .help-guide dd { margin-bottom: 12px; }
+
+.profile-form select { box-sizing: border-box; width: 100%; padding: 8px; }
+.order-table { width: 100%; border-collapse: collapse; }

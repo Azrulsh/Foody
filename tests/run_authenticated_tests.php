@@ -33,7 +33,8 @@ try {
     $restaurantSnapshot = restaurantLoadAll($database)['jamilah'];
     $environment['FOODY_TEST_RESTAURANT_SNAPSHOT'] = json_encode($restaurantSnapshot, JSON_THROW_ON_ERROR);
     $environment['FOODY_TEST_RESTAURANT_MARKER'] = $restaurantMarker;
-    foreach (['auth_http_test.mjs', 'restaurant_http_test.mjs', 'service_http_test.mjs', 'commission_http_test.mjs'] as $suite) {
+    $environment['FOODY_TEST_ORDER_MARKER'] = 'Order <script>' . $suffix . '</script>';
+    foreach (['auth_http_test.mjs', 'restaurant_http_test.mjs', 'order_http_test.mjs', 'service_http_test.mjs', 'commission_http_test.mjs'] as $suite) {
         // Credentials travel through the child environment, never command arguments.
         $process = proc_open(['node', __DIR__ . '/' . $suite, 'http://localhost/Foody/'], [STDIN, STDOUT, STDERR], $pipes, dirname(__DIR__), $environment);
         if (!is_resource($process) || proc_close($process) !== 0) {
@@ -52,6 +53,10 @@ try {
         }
     }
     foreach ($ids as $id) {
+        $statement = $database->prepare('DELETE FROM orders WHERE created_by = ?');
+        $statement->bind_param('i', $id);
+        $statement->execute();
+        $statement->close();
         $statement = $database->prepare('DELETE FROM auth_users WHERE id = ? AND email IN (?, ?)');
         $statement->bind_param('iss', $id, $email, $otherEmail);
         $statement->execute();

@@ -13,6 +13,14 @@ if (!in_array($method, ['GET', 'POST'], true)) {
 }
 
 $error = '';
+$restaurantPageSize = 2;
+$requestedPage = $_GET['page'] ?? '1';
+if (!is_string($requestedPage) || !preg_match('/\A[1-9][0-9]{0,8}\z/D', $requestedPage)) {
+    http_response_code(400);
+    exit('Invalid page number.');
+}
+$restaurantPageCount = max(1, (int) ceil(count(SERVICE_RESTAURANTS) / $restaurantPageSize));
+$restaurantPage = min((int) $requestedPage, $restaurantPageCount);
 $restaurants = [];
 $database = null;
 $submittedCode = null;
@@ -24,6 +32,7 @@ try {
         // Reject invalid tokens and payloads before opening a write connection.
         authCheckCsrf($_POST['csrf_token'] ?? null);
         $submittedCode = restaurantCode($_POST['code'] ?? null);
+        $restaurantPage = intdiv(array_search($submittedCode, SERVICE_RESTAURANTS, true), $restaurantPageSize) + 1;
         $submittedRevision = restaurantRevision($_POST['revision'] ?? null);
         restaurantValidate($_POST);
     }
@@ -32,7 +41,7 @@ try {
         restaurantUpdate($database, $submittedCode, $_POST, $submittedRevision);
         $_SESSION['restaurant_saved'] = true;
         session_write_close();
-        header('Location: my_restaurants.php', true, 303);
+        header('Location: my_restaurants.php?page=' . $restaurantPage, true, 303);
         exit;
     }
 } catch (InvalidArgumentException $exception) {
@@ -72,6 +81,7 @@ try {
         $database->close();
     }
 }
+$visibleRestaurants = array_slice($restaurants, ($restaurantPage - 1) * $restaurantPageSize, $restaurantPageSize, true);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,11 +99,11 @@ try {
             <td rowspan="2" style="width:160px;height:700px"><?php require __DIR__ . '/sidebar.php'; ?></td>
             <td style="width:1000px;text-align:center"><header>MY RESTAURANT</header></td>
         </tr>
-        <tr><td class="profile-content">
+        <tr><td class="profile-content restaurant-content">
             <?php if ($error !== ''): ?><p role="alert"><?= serviceEscape($error) ?></p><?php endif; ?>
             <?php if ($saved): ?><p role="status">Restaurant saved.</p><?php endif; ?>
-            <?php foreach ($restaurants as $code => $restaurant): ?>
-            <form action="my_restaurants.php" method="post" class="profile-form">
+            <?php foreach ($visibleRestaurants as $code => $restaurant): ?>
+            <form action="my_restaurants.php?page=<?= serviceEscape((string) $restaurantPage) ?>" method="post" class="profile-form">
                 <h2><?= serviceEscape($restaurant['name']) ?></h2>
                 <input type="hidden" name="csrf_token" value="<?= serviceEscape(authCsrf()) ?>">
                 <input type="hidden" name="code" value="<?= serviceEscape($code) ?>">
@@ -108,6 +118,13 @@ try {
             </form>
             <hr>
             <?php endforeach; ?>
+            <?php if ($restaurants !== []): ?>
+            <nav aria-label="Restaurant pages">
+                <?php if ($restaurantPage > 1): ?><a href="my_restaurants.php?page=<?= serviceEscape((string) ($restaurantPage - 1)) ?>">Previous</a><?php endif; ?>
+                Page <?= serviceEscape((string) $restaurantPage) ?> of <?= serviceEscape((string) $restaurantPageCount) ?>
+                <?php if ($restaurantPage < $restaurantPageCount): ?><a href="my_restaurants.php?page=<?= serviceEscape((string) ($restaurantPage + 1)) ?>">Next</a><?php endif; ?>
+            </nav>
+            <?php endif; ?>
         </td></tr>
     </table>
 </body>

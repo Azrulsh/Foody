@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS orders (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    restaurant_code VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    order_date DATE NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    total_cents BIGINT UNSIGNED NOT NULL,
+    status VARCHAR(9) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'pending',
+    revision BIGINT UNSIGNED NOT NULL DEFAULT 1,
+    request_key CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+    created_by BIGINT UNSIGNED NOT NULL,
+    updated_by BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_orders_restaurant_date (restaurant_code, order_date, id),
+    INDEX idx_orders_date (order_date, id),
+    CONSTRAINT fk_orders_restaurant FOREIGN KEY (restaurant_code) REFERENCES restaurants (code),
+    CONSTRAINT fk_orders_creator FOREIGN KEY (created_by) REFERENCES auth_users (id),
+    CONSTRAINT fk_orders_updater FOREIGN KEY (updated_by) REFERENCES auth_users (id),
+    CONSTRAINT chk_order_total CHECK (total_cents <= 999999999),
+    CONSTRAINT chk_order_status CHECK (status IN ('pending', 'completed', 'cancelled')),
+    CONSTRAINT chk_order_revision CHECK (revision >= 1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

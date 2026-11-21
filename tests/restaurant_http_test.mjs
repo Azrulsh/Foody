@@ -25,7 +25,16 @@ check((await request('my_restaurants.php', { code: 'jamilah' })).status === 303,
 await loginForTests(request);
 const page = await request('my_restaurants.php');
 check(page.status === 200, 'Page loads.');
-check((page.body.match(/name="code"/g) || []).length === 3, 'Exactly three restaurants.');
+check((page.body.match(/name="code"/g) || []).length === 2, 'Two restaurants on the first page.');
+check(page.body.includes('my_restaurants.php?page=2') && page.body.includes('Page 1 of 2'), 'First page links to the next page.');
+const secondPage = await request('my_restaurants.php?page=2');
+check(secondPage.status === 200 && (secondPage.body.match(/name="code"/g) || []).length === 1, 'Last restaurant is on page two.');
+check(secondPage.body.includes('name="code" value="lepak"') && secondPage.body.includes('Page 2 of 2'), 'Stable ordering across pages.');
+const secondError = await request('my_restaurants.php?page=2', { ...form(secondPage.body, 'lepak'), name: '', address: '', phone: '' });
+check(secondError.status === 422 && secondError.body.includes('Page 2 of 2'), 'Validation errors preserve the current page.');
+check((await request('my_restaurants.php?page=999')).body.includes('Page 2 of 2'), 'Out-of-range page is clamped.');
+check((await request('my_restaurants.php?page[]=2')).status === 400, 'Array page rejected.');
+check((await request('my_restaurants.php?page=0')).status === 400, 'Invalid page rejected.');
 check(!page.body.includes('type="file"'), 'No image upload flow.');
 const original = JSON.parse(process.env.FOODY_TEST_RESTAURANT_SNAPSHOT || 'null');
 const marker = process.env.FOODY_TEST_RESTAURANT_MARKER;
@@ -37,7 +46,8 @@ for (const changed of [{ code: 'unknown' }, { revision: '0' }, { name: '' }, { p
 }
 check((await request('my_restaurants.php', { ...payload, name: undefined, 'name[nested]': 'x' })).status === 422, 'Nested payload rejected.');
 check((await request('my_restaurants.php', undefined, 'DELETE')).status === 405, 'Unsupported method rejected.');
-check((await request('my_restaurants.php', { ...payload, name: marker })).status === 303, 'Save redirects.');
+const saved = await request('my_restaurants.php', { ...payload, name: marker });
+check(saved.status === 303 && saved.headers.get('location') === 'my_restaurants.php?page=1', 'Save redirects to the current page.');
 const main = await request('main.php');
 const escaped = marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 check(main.status === 200 && main.body.includes(escaped) && !main.body.includes(marker), 'Main Page reads and escapes the updated name.');
