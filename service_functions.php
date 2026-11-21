@@ -83,10 +83,11 @@ function serviceDatabase(): mysqli
 }
 
 /** @return list<int> */
-function serviceLoadAmounts(mysqli $database, string $restaurant, string $period): array
+function serviceLoadAmounts(mysqli $database, string $restaurant, string $period, string $module = 'service'): array
 {
+    $table = serviceAmountTable($module);
     $amounts = array_fill(0, SERVICE_SLOT_COUNTS[$period], 0);
-    $statement = $database->prepare('SELECT slot_number, amount_cents FROM service_amounts WHERE restaurant = ? AND period = ? ORDER BY slot_number');
+    $statement = $database->prepare("SELECT slot_number, amount_cents FROM {$table} WHERE restaurant = ? AND period = ? ORDER BY slot_number");
     try {
         $statement->bind_param('ss', $restaurant, $period);
         $statement->execute();
@@ -106,11 +107,12 @@ function serviceLoadAmounts(mysqli $database, string $restaurant, string $period
 }
 
 /** @param list<int> $amounts */
-function serviceSaveAmounts(mysqli $database, string $restaurant, string $period, array $amounts): void
+function serviceSaveAmounts(mysqli $database, string $restaurant, string $period, array $amounts, string $module = 'service'): void
 {
+    $table = serviceAmountTable($module);
     $database->begin_transaction();
     try {
-        $statement = $database->prepare('INSERT INTO service_amounts (restaurant, period, slot_number, amount_cents) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount_cents = VALUES(amount_cents)');
+        $statement = $database->prepare("INSERT INTO {$table} (restaurant, period, slot_number, amount_cents) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE amount_cents = VALUES(amount_cents)");
         try {
             $statement->bind_param('ssii', $restaurant, $period, $slot, $cents);
             foreach ($amounts as $index => $cents) {
@@ -125,4 +127,14 @@ function serviceSaveAmounts(mysqli $database, string $restaurant, string $period
         $database->rollback();
         throw $exception;
     }
+}
+
+/** SQL identifiers must come exclusively from this fixed allowlist. */
+function serviceAmountTable(string $module): string
+{
+    return match ($module) {
+        'service' => 'service_amounts',
+        'report' => 'report_amounts',
+        default => throw new InvalidArgumentException('Invalid amount module.'),
+    };
 }

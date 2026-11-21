@@ -23,12 +23,16 @@ function check(condition, message) {
     checks++;
 }
 
-for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4]]) {
+for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4], ['reportw.php', 7], ['reportm.php', 4]]) {
     const loaded = await request(`${page}?restaurant=greenview`);
     check(loaded.status === 200, `${page} loads`);
     check((loaded.body.match(/data-service-amount/g) || []).length === slots, 'Expected slot count');
     check(!loaded.body.includes('role="alert"'), 'No database error');
     check(loaded.headers.get('cache-control') === 'no-store', 'Financial data is not cached');
+    if (page.startsWith('report')) {
+        check(loaded.body.includes('restaurant=greenview'), 'Report navigation preserves the restaurant');
+        check(loaded.body.includes('src="service.js"'), 'Reports share the tested money input behavior');
+    }
     const token = loaded.body.match(/name="csrf_token" value="([a-f0-9]+)"/)[1];
     check((await request(`${page}?restaurant=greenview`, { csrf_token: 'wrong' })).status === 403, 'Reject invalid CSRF');
     const payload = { csrf_token: token };
@@ -48,6 +52,9 @@ for (const [page, slots] of [['servicew.php', 7], ['servicem.php', 4]]) {
 
 check((await request('servicew.php?restaurant[]=bad')).status === 400, 'Reject array restaurant');
 check((await request('servicew.php?restaurant=unknown')).status === 400, 'Reject unknown restaurant');
+check((await request('reportw.php?restaurant[]=bad')).status === 400, 'Reject array report restaurant');
+check((await request('reportm.php?restaurant=unknown')).status === 400, 'Reject unknown report restaurant');
+check((await request('reportw.php', undefined, 'DELETE')).status === 405, 'Reject unsupported report methods');
 check((await request('servicew.php', undefined, 'PUT')).status === 405, 'Reject unsupported methods');
 check((await request('service_controller.php')).status === 404, 'Controller is not a public page');
 check((await request('tests/service_test.php')).status === 404, 'PHP tests cannot execute over HTTP');

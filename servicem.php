@@ -48,7 +48,7 @@ require __DIR__ . '/service_controller.php';
         <br>
         <p2>TYPE:
         <button type="submit">Service</button>
-        <a href="reportm.php"> <button>Report</button></a>
+        <a href="reportm.php<?= serviceEscape($serviceQuery) ?>"> <button>Report</button></a>
         <br>
         <hr>
         </p2>
@@ -63,19 +63,19 @@ require __DIR__ . '/service_controller.php';
         <p> Week 1
             <br>
             1233 Services Completed RM:
-            <input type="number" name="amounts[0]" value="<?= serviceEscape($serviceValues[0]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Week 1 amount RM" form="service-form">
+            <input type="number" name="amounts[0]" value="<?= serviceEscape($serviceValues[0]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 1 amount RM" form="service-form">
             <p> Week 2
             <br>
             1235 Services Completed RM:
-            <input type="number" name="amounts[1]" value="<?= serviceEscape($serviceValues[1]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Week 2 amount RM" form="service-form">
+            <input type="number" name="amounts[1]" value="<?= serviceEscape($serviceValues[1]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 2 amount RM" form="service-form">
             <p> Week 3
             <br>
             1227 Services Completed RM:
-            <input type="number" name="amounts[2]" value="<?= serviceEscape($serviceValues[2]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Week 3 amount RM" form="service-form">
+            <input type="number" name="amounts[2]" value="<?= serviceEscape($serviceValues[2]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 3 amount RM" form="service-form">
             <p> Week 4
             <br>
             1234 Services Completed RM:
-            <input type="number" name="amounts[3]" value="<?= serviceEscape($serviceValues[3]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Week 4 amount RM" form="service-form">
+            <input type="number" name="amounts[3]" value="<?= serviceEscape($serviceValues[3]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 4 amount RM" form="service-form">
             <br>
             <br>
              Total RM:

@@ -5,7 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/service_functions.php';
 
 // Included before HTML by the existing weekly and monthly pages.
-if (!isset($servicePeriod) || !isset(SERVICE_SLOT_COUNTS[$servicePeriod])) {
+$serviceModule = $serviceModule ?? 'service';
+if (!isset($servicePeriod) || !isset(SERVICE_SLOT_COUNTS[$servicePeriod]) || !in_array($serviceModule, ['service', 'report'], true)) {
     http_response_code(404);
     exit;
 }
@@ -63,15 +64,16 @@ if ($serviceMethod === 'POST') {
 try {
     $serviceDatabase = serviceDatabase();
     if ($serviceMethod === 'GET') {
-        $serviceAmounts = serviceLoadAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod);
+        $serviceAmounts = serviceLoadAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceModule);
         $serviceValues = array_map('serviceFormatInput', $serviceAmounts);
         $serviceTotal = serviceFormatMoney(array_sum($serviceAmounts));
     } elseif ($serviceError === '' && $serviceAmounts !== null) {
-        serviceSaveAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceAmounts);
+        serviceSaveAmounts($serviceDatabase, $serviceRestaurant, $servicePeriod, $serviceAmounts, $serviceModule);
         $_SESSION['service_calculation'] = [
             'restaurant' => $serviceRestaurant,
             'period' => $servicePeriod,
             'total_cents' => array_sum($serviceAmounts),
+            'module' => $serviceModule,
         ];
         session_write_close();
         header('Location: restaurant.php', true, 303);
@@ -79,10 +81,10 @@ try {
     }
     $serviceDatabaseReady = true;
 } catch (Throwable $exception) {
-    error_log('Foody service module: ' . $exception->getMessage());
+    error_log('Foody ' . $serviceModule . ' module: ' . $exception->getMessage());
     if ($serviceError === '') {
         http_response_code(503);
-        $serviceError = 'Service data is unavailable. Please try again later. Your changes have not been saved.';
+        $serviceError = ucfirst($serviceModule) . ' data is unavailable. Please try again later. Your changes have not been saved.';
     }
 } finally {
     if ($serviceDatabase instanceof mysqli) {

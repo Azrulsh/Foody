@@ -49,7 +49,7 @@ require __DIR__ . '/service_controller.php';
         <br>
         <p2>TYPE:
         <button type="submit">Service</button>
-        <a href="reportw.php"> <button>Report</button></a>
+        <a href="reportw.php<?= serviceEscape($serviceQuery) ?>"> <button>Report</button></a>
         <br>
         <hr>
         </p2>
@@ -64,31 +64,31 @@ require __DIR__ . '/service_controller.php';
         <p> Day 1
             <br>
             145 Services Completed RM:
-            <input type="number" id="fname" name="amounts[0]" value="<?= serviceEscape($serviceValues[0]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 1 amount RM" form="service-form">
+            <input type="number" id="fname" name="amounts[0]" value="<?= serviceEscape($serviceValues[0]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 1 amount RM" form="service-form">
             <p> Day 2
             <br>
             129 Services Completed RM:
-            <input type="number" name="amounts[1]" value="<?= serviceEscape($serviceValues[1]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 2 amount RM" form="service-form">
+            <input type="number" name="amounts[1]" value="<?= serviceEscape($serviceValues[1]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 2 amount RM" form="service-form">
             <p> Day 3
             <br>
             121 Services Completed RM:
-            <input type="number" name="amounts[2]" value="<?= serviceEscape($serviceValues[2]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 3 amount RM" form="service-form">
+            <input type="number" name="amounts[2]" value="<?= serviceEscape($serviceValues[2]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 3 amount RM" form="service-form">
             <p> Day 4
             <br>
             134 Services Completed RM:
-            <input type="number" name="amounts[3]" value="<?= serviceEscape($serviceValues[3]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 4 amount RM" form="service-form">
+            <input type="number" name="amounts[3]" value="<?= serviceEscape($serviceValues[3]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 4 amount RM" form="service-form">
             <p> Day 5
             <br>
             154 Services Completed RM:
-            <input type="number" name="amounts[4]" value="<?= serviceEscape($serviceValues[4]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 5 amount RM" form="service-form">
+            <input type="number" name="amounts[4]" value="<?= serviceEscape($serviceValues[4]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 5 amount RM" form="service-form">
             <p> Day 6
             <br>
             123 Services Completed RM:
-            <input type="number" name="amounts[5]" value="<?= serviceEscape($serviceValues[5]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 6 amount RM" form="service-form">
+            <input type="number" name="amounts[5]" value="<?= serviceEscape($serviceValues[5]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 6 amount RM" form="service-form">
             <p> Day 7
             <br>
             124 Services Completed RM:
-            <input type="number" name="amounts[6]" value="<?= serviceEscape($serviceValues[6]) ?>" min="0" max="9999999.99" step="1" required data-service-amount aria-label="Day 7 amount RM" form="service-form">
+            <input type="number" name="amounts[6]" value="<?= serviceEscape($serviceValues[6]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Day 7 amount RM" form="service-form">
             <br>
             <br>
              Total RM:

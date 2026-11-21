@@ -1,9 +1,15 @@
+<?php
+declare(strict_types=1);
+$serviceModule = 'report';
+$servicePeriod = 'monthly';
+require __DIR__ . '/service_controller.php';
+?>
 <!DOCTYPE html>
 <html>
 
 <head>
     <link rel="stylesheet" href="css/Background.css">
-    <link href="Calculator with Js" rel="calculate.js">
+    <script src="service.js" defer></script>
     <link rel="stylesheet" href="reportm.css">
 
 </head>
@@ -23,59 +29,63 @@
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">
             <header> WELCOME, ACCOUNTANT</header>
-                </td>   
+                </td>
         </tr>
         <tr>
-    
+
             <td  id="backgroundmain">
             <!--
                 <button id=""style="float:bottom;" onclick="document.location=''">Main Page</button>
             -->
-      
+
         <br>
         <a href="main.php"><button>Back</button></a>
         <p>SERVICE/REPORT LIST
         <p>
         <p1>DURATION:
-        <a href="reportw.php"> <button>Weekly</button></a> 
+        <a href="reportw.php<?= serviceEscape($serviceQuery) ?>"> <button>Weekly</button></a>
         <button type="submit">Monthly</button>
         </p1>
         <br>
         <br>
         <p2>TYPE:
-        <a href="servicem.php"> <button>Service</button></a>
+        <a href="servicem.php<?= serviceEscape($serviceQuery) ?>"> <button>Service</button></a>
         <button type="submit">Report</button>
         <br>
         <hr>
         </p2>
-        <form> 
+        <?php if ($serviceError !== ''): ?>
+        <p role="alert"><?= serviceEscape($serviceError) ?></p>
+        <?php endif; ?>
+        <form id="service-form" data-service-form method="post" action="reportm.php<?= serviceEscape($serviceQuery) ?>">
+        <input type="hidden" name="csrf_token" value="<?= serviceEscape($_SESSION['service_csrf']) ?>" form="service-form">
         <p>4756 Total Reports
         <br>
         <table border="1" align="center">
-        <p> Week 1 
+        <p> Week 1
             <br>
             1313 Total Reports -RM:
-            <input type="number">
+            <input type="number" name="amounts[0]" value="<?= serviceEscape($serviceValues[0]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 1 report amount RM" form="service-form">
             <p> Week 2
             <br>
             1143 Total Reports -RM:
-            <input type="number">
+            <input type="number" name="amounts[1]" value="<?= serviceEscape($serviceValues[1]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 2 report amount RM" form="service-form">
             <p> Week 3
             <br>
             1098 Total Reports -RM:
-            <input type="number">
+            <input type="number" name="amounts[2]" value="<?= serviceEscape($serviceValues[2]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 3 report amount RM" form="service-form">
             <p> Week 4
             <br>
             1195 Total Reports -RM:
-            <input type="number" name="total">
+            <input type="number" name="amounts[3]" value="<?= serviceEscape($serviceValues[3]) ?>" min="0" max="9999999.99" step="any" required data-service-amount aria-label="Week 4 report amount RM" form="service-form">
             <br>
             <br>
              Total -RM:
-             <input type="number" name="total">  
+             <input type="number" value="<?= serviceEscape($serviceTotal) ?>" step="0.01" readonly data-service-total aria-label="Total RM" form="service-form">
             <hr>
-        </table> 
-        <input type="reset" value="Delete">
-        <a href="restaurant.php"> <button>Calculation</button></a> 
+        </table>
+        <input type="reset" value="Delete" form="service-form">
+        <button type="submit" form="service-form" <?= $serviceDatabaseReady ? '' : 'disabled' ?>>Calculation</button>
         </br>
         </p>
         </td>

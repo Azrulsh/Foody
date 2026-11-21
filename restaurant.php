@@ -3,7 +3,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/service_functions.php';
 serviceStartSession();
 $serviceContext = $_SESSION['service_calculation'] ?? [];
-$serviceBackPage = ($serviceContext['period'] ?? '') === 'monthly' ? 'servicem.php' : 'servicew.php';
+$serviceBackModule = ($serviceContext['module'] ?? '') === 'report' ? 'report' : 'service';
+$serviceBackPage = $serviceBackModule . (($serviceContext['period'] ?? '') === 'monthly' ? 'm.php' : 'w.php');
 $serviceBackRestaurant = $serviceContext['restaurant'] ?? $_SESSION['service_restaurant'] ?? 'jamilah';
 if (!is_string($serviceBackRestaurant) || !in_array($serviceBackRestaurant, SERVICE_RESTAURANTS, true)) {
     $serviceBackRestaurant = 'jamilah';
