@@ -27,7 +27,7 @@ $appearance = appearanceForUser($currentUser);
 <body>
     <table border="1" align="center">
         <tr>
-            <td rowspan="3" style="width: 160px;height: 700px;">
+            <td class="sidebar-cell" rowspan="3" style="width:160px;">
                 <?php include 'sidebar.php' ?>
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">

@@ -92,7 +92,7 @@ $appearance = appearanceForUser($currentUser);
 <body>
     <table border="1" align="center">
         <tr>
-            <td rowspan="2" style="width:160px;height:700px"><?php require __DIR__ . '/sidebar.php'; ?></td>
+            <td class="sidebar-cell" rowspan="2" style="width:160px;"><?php require __DIR__ . '/sidebar.php'; ?></td>
             <td style="width:1000px;text-align:center"><header>SETTINGS</header></td>
         </tr>
         <tr><td class="profile-content">

@@ -1,62 +1,19 @@
--- phpMyAdmin SQL Dump
--- version 4.7.4
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Oct 06, 2017 at 06:48 AM
--- Server version: 10.1.26-MariaDB
--- PHP Version: 7.1.9
+-- Foody consolidated schema for XAMPP / MariaDB.
+-- Select the foody database before importing this file.
+-- Safe to re-import: existing records and edited restaurant details are retained.
+-- Contains schema and initial restaurant names only, not an export of account/business data.
+-- Existing installations need no re-import merely because this file moved.
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+SET NAMES utf8mb4;
 
---
--- Database: `commdb`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `book`
---
-
-CREATE TABLE `commission` (
-  `commissions` double NOT NULL,
-  `penalties` double NOT NULL,
-  `services` double NOT NULL,
-  `totals` double NOT NULL,
-  `ID` int(11) NOT NULL
+-- Legacy rows have no restaurant/module/period identity; keep them unchanged.
+CREATE TABLE IF NOT EXISTS commission (
+    commissions DOUBLE NOT NULL,
+    penalties DOUBLE NOT NULL,
+    services DOUBLE NOT NULL,
+    totals DOUBLE NOT NULL,
+    ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `book`
---
-ALTER TABLE `commission`
-  ADD PRIMARY KEY (`ID`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `book`
---
-ALTER TABLE `commission`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- Service amounts are separate from commission data. Amounts use integer cents.
 CREATE TABLE IF NOT EXISTS service_amounts (
@@ -73,7 +30,7 @@ CREATE TABLE IF NOT EXISTS service_amounts (
     CONSTRAINT chk_service_amount CHECK (amount_cents <= 999999999)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Run once against the existing foody database; no commission data is changed.
+-- Report amounts remain separate from service and commission records.
 CREATE TABLE IF NOT EXISTS report_amounts (
     restaurant VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
     period VARCHAR(7) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
@@ -181,3 +138,11 @@ CREATE TABLE IF NOT EXISTS user_settings (
     CONSTRAINT chk_settings_panel CHECK (panel_background IN ('solid', 'transparent')),
     CONSTRAINT chk_settings_revision CHECK (revision >= 1)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Upgrade installations created before appearance preferences were introduced.
+-- MariaDB conditional DDL also makes repeated imports safe on current schemas.
+ALTER TABLE user_settings
+    ADD COLUMN IF NOT EXISTS theme VARCHAR(5) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'light',
+    ADD COLUMN IF NOT EXISTS panel_background VARCHAR(11) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'transparent',
+    ADD CONSTRAINT IF NOT EXISTS chk_settings_theme CHECK (theme IN ('light', 'dark')),
+    ADD CONSTRAINT IF NOT EXISTS chk_settings_panel CHECK (panel_background IN ('solid', 'transparent'));

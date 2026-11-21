@@ -4,6 +4,19 @@ require_once __DIR__ . '/auth_functions.php';
 $currentUser = authRequireUser();
 ?>
     <style>
+        .sidebar-cell {
+            vertical-align: top;
+            height: max(700px, calc(50vh + var(--sidebar-height, 460px) / 2));
+            height: max(700px, calc(50dvh + var(--sidebar-height, 460px) / 2));
+        }
+        .sidebar-sticky {
+            position: sticky;
+            top: max(12px, calc((100vh - var(--sidebar-height, 460px)) / 2));
+            top: max(12px, calc((100dvh - var(--sidebar-height, 460px)) / 2));
+            max-height: calc(100vh - 24px);
+            max-height: calc(100dvh - 24px);
+            overflow-y: auto;
+        }
         #sidebar{
             background-color: black;
             border-color: 1px black;
@@ -28,6 +41,7 @@ $currentUser = authRequireUser();
     
         
     </style>
+    <div class="sidebar-sticky">
         <table id="sidebar">
             <tr>
                 <td>
@@ -86,3 +100,5 @@ $currentUser = authRequireUser();
                 </td>
             </tr>
         </table>
+    </div>
+    <script src="sidebar.js" defer></script>

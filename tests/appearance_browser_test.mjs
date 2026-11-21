@@ -63,6 +63,29 @@ try {
     await navigate('login.php');
     await submit(`document.getElementById('email').value=${JSON.stringify(process.env.FOODY_TEST_EMAIL)}; document.getElementById('password').value=${JSON.stringify(process.env.FOODY_TEST_PASSWORD)}; document.querySelector('form').requestSubmit();`);
     check(await evaluate("location.pathname.endsWith('/main.php')"), 'Browser login succeeds.');
+    for (const page of ['main.php', 'servicew.php', 'servicem.php', 'reportw.php', 'reportm.php', 'restaurant.php', 'profile.php', 'my_restaurants.php', 'orders.php', 'help.php', 'settings.php']) {
+        await navigate(page);
+        for (const fraction of [0, 0.5, 1]) {
+            await evaluate(`window.scrollTo(0, (document.documentElement.scrollHeight - innerHeight) * ${fraction})`);
+            const placement = await evaluate(`(() => {
+                const wrapper = document.querySelector('.sidebar-sticky');
+                const rect = wrapper.getBoundingClientRect();
+                return { top: rect.top, bottom: rect.bottom, center: (rect.top + rect.bottom) / 2, viewport: innerHeight, position: getComputedStyle(wrapper).position };
+            })()`);
+            check(placement.position === 'sticky' && placement.top >= 10 && placement.bottom <= placement.viewport - 10, 'Sidebar stays visible while scrolling on ' + page);
+            check(Math.abs(placement.center - placement.viewport / 2) <= 3, 'Sidebar stays centered in the viewport on ' + page + ': ' + JSON.stringify(placement));
+        }
+    }
+    await send('Emulation.setDeviceMetricsOverride', { width: 1366, height: 400, deviceScaleFactor: 1, mobile: false });
+    await navigate('help.php');
+    check(await evaluate(`(() => {
+        const wrapper = document.querySelector('.sidebar-sticky');
+        wrapper.scrollTop = wrapper.scrollHeight;
+        const rect = wrapper.getBoundingClientRect();
+        const logout = wrapper.querySelector('button[type="submit"]').getBoundingClientRect();
+        return wrapper.scrollHeight > wrapper.clientHeight && rect.top >= 10 && rect.bottom <= innerHeight - 10 && logout.top >= rect.top && logout.bottom <= rect.bottom;
+    })()`), 'Short screens can scroll the sidebar to reach Log Out.');
+    await send('Emulation.setDeviceMetricsOverride', { width: 1366, height: 1000, deviceScaleFactor: 1, mobile: false });
     for (const page of ['servicew.php', 'servicem.php', 'reportw.php', 'reportm.php']) {
         await navigate(page);
         const totals = await evaluate(`(() => {
