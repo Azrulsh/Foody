@@ -53,7 +53,7 @@ $currentUser = authRequireUser();
             </tr>
             <tr>
                 <td id="sidebarbox">
-                <button id="sidebutton" onclick="document.location=''">My Restaurant</button>
+                <button type="button" id="sidebutton" onclick="document.location='my_restaurants.php'">My Restaurant</button>
                 </td>
             </tr>
             <tr>
