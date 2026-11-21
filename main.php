@@ -23,15 +23,15 @@
             </td>
             <td  style="width: 1000px;height: 0px;text-align:center">
             <header> WELCOME, ACCOUNTANT</header>
-                </td>   
+                </td>
         </tr>
         <tr>
-    
+
             <td  id="backgroundmain">
             <!--
                 <button id=""style="float:bottom;" onclick="document.location=''">Main Page</button>
             -->
-                
+
         <br>
         <p>RECEIVED SERVICE/REPORT LIST
         <p>
@@ -41,7 +41,7 @@
         <img src="rest.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php"> <button>Jamilah restaurant</button></a> 
+        <a href="servicew.php?restaurant=jamilah"> <button>Jamilah restaurant</button></a>
         </p1>
         <br>
         <hr>
@@ -49,7 +49,7 @@
         <img src="rest2.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php"> <button>Greenview restaurant</button></a> 
+        <a href="servicew.php?restaurant=greenview"> <button>Greenview restaurant</button></a>
         <br>
         <hr>
         </p2>
@@ -57,7 +57,7 @@
         <img src="rest3.png" width="280" height="125" title="Restaurant" alt="Restaurant picture" />
         <br>
         <br>
-        <a href="servicew.php"> <button>Lepak cafe</button></a> 
+        <a href="servicew.php?restaurant=lepak"> <button>Lepak cafe</button></a>
         <br>
         </br>
         </p>

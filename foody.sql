@@ -30,7 +30,7 @@ CREATE TABLE `commission` (
   `penalties` double NOT NULL,
   `services` double NOT NULL,
   `totals` double NOT NULL,
-  `ID` int(11) NOT NULL,
+  `ID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -57,3 +57,18 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Service amounts are separate from commission data. Amounts use integer cents.
+CREATE TABLE IF NOT EXISTS service_amounts (
+    restaurant VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    period VARCHAR(7) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    slot_number TINYINT UNSIGNED NOT NULL,
+    amount_cents BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (restaurant, period, slot_number),
+    CONSTRAINT chk_service_restaurant CHECK (restaurant IN ('jamilah', 'greenview', 'lepak')),
+    CONSTRAINT chk_service_slot CHECK (
+        (period = 'weekly' AND slot_number BETWEEN 1 AND 7)
+        OR (period = 'monthly' AND slot_number BETWEEN 1 AND 4)
+    ),
+    CONSTRAINT chk_service_amount CHECK (amount_cents <= 999999999)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

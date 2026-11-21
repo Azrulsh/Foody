@@ -16,6 +16,6 @@ if (mysqli_connect_errno())
   }
 
 // To select one particular database to be used
-mysqli_select_db($conn,"commdb") or die( "Could not open products database");
+mysqli_select_db($conn,"foody") or die( "Could not open products database");
 
 ?>
